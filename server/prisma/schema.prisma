@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ResourceType {
+  VIDEO
+  ARTICLE
+  PDF
+  WEBSITE
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(STUDENT)
+
+  teacherProfile   TeacherProfile?
+  quizAttempts     QuizAttempt[]
+  learningProgress LearningProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeacherProfile {
+  id              Int     @id @default(autoincrement())
+  userId          Int     @unique
+  bio             String?
+  experienceYears Int     @default(0)
+  rating          Float   @default(0)
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topics TeacherTopic[]
+}
+
+model Subject {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+
+  topics Topic[]
+}
+
+model Topic {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  subjectId   Int
+
+  subject   Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teachers  TeacherTopic[]
+  quizzes   Quiz[]
+  resources LearningResource[]
+  progress  LearningProgress[]
+
+  @@unique([name, subjectId])
+}
+
+// TEACHER - TOPIC MANY-TO-MANY
+
+model TeacherTopic {
+  teacherId Int
+  topicId   Int
+
+  teacher TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  topic   Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, topicId])
+}
+
+// QUIZZES
+
+model Quiz {
+  id      Int    @id @default(autoincrement())
+  title   String
+  topicId Int
+
+  topic     Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  QuizAttempt[]
+
+  createdAt DateTime @default(now())
+}
+
+// QUESTIONS
+
+model Question {
+  id     Int    @id @default(autoincrement())
+  text   String
+  quizId Int
+
+  quiz    Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options QuestionOption[]
+  answers Answer[]
+}
+
+// QUESTION OPTIONS
+
+model QuestionOption {
+  id         Int     @id @default(autoincrement())
+  text       String
+  isCorrect  Boolean @default(false)
+  questionId Int
+
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedBy Answer[]
+}
+
+// QUIZ ATTEMPTS
+
+model QuizAttempt {
+  id             Int       @id @default(autoincrement())
+  studentId      Int
+  quizId         Int
+  score          Int?
+  totalQuestions Int
+  completedAt    DateTime?
+
+  student User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  quiz    Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers Answer[]
+
+  createdAt DateTime @default(now())
+}
+
+// STUDENT ANSWERS
+
+model Answer {
+  id               Int     @id @default(autoincrement())
+  attemptId        Int
+  questionId       Int
+  selectedOptionId Int?
+  isCorrect        Boolean @default(false)
+
+  attempt        QuizAttempt     @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+
+  @@unique([attemptId, questionId])
+}
+
+// PERSONALIZED LEARNING PROGRESS
+
+model LearningProgress {
+  id              Int            @id @default(autoincrement())
+  studentId       Int
+  topicId         Int
+  status          ProgressStatus @default(NOT_STARTED)
+  masteryScore    Float          @default(0)
+  lastPracticedAt DateTime?
+
+  student User  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  topic   Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, topicId])
+}
+
+// LEARNING RESOURCES
+
+model LearningResource {
+  id           Int          @id @default(autoincrement())
+  title        String
+  url          String
+  resourceType ResourceType
+  topicId      Int
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}

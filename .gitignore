@@ -5,3 +5,9 @@ node_modules/
 dist/
 build/
 .DS_Store
+
+# Local AI agent files
+**/.agents/
+**/.claude/
+**/.windsurf/
+**/skills-lock.json
