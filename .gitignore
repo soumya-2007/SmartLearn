@@ -11,3 +11,4 @@ build/
 **/.claude/
 **/.windsurf/
 **/skills-lock.json
+**/.freebuff/
