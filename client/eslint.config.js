@@ -18,4 +18,10 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Provider modules intentionally co-locate their context hook with the
+    // provider component. The fast-refresh rule does not apply to them.
+    files: ['src/lib/**/*.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

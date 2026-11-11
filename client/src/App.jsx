@@ -1,122 +1,87 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react'
+import { Compass } from 'lucide-react'
+import { RouterProvider, useRouter } from './lib/router'
+import { StoreProvider } from './lib/store'
+import { AuthModal, Footer, Header, Tabbar, Toaster } from './components/chrome'
+import { EmptyState } from './components/ui'
+import Landing from './pages/Landing'
+import Dashboard from './pages/Dashboard'
+import Discover from './pages/Discover'
+import Teachers from './pages/Teachers'
+import TeacherProfile from './pages/TeacherProfile'
+import Workspace from './pages/Workspace'
+import Assessment from './pages/Assessment'
+import Progress from './pages/Progress'
+import Profile from './pages/Profile'
+import './styles/pages.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+function NotFound() {
+  return (
+    <div className="container page">
+      <EmptyState
+        icon={Compass}
+        title="This page has wandered off"
+        action={
+          <a className="btn btn--primary" href="/">
+            Back to home
+          </a>
+        }
+      >
+        The link you followed does not exist. Try discovering a topic instead.
+      </EmptyState>
+    </div>
+  )
+}
+
+function Shell() {
+  const { pathname } = useRouter()
+  const [auth, setAuth] = useState({ open: false, mode: 'login' })
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [pathname])
+
+  const openAuth = (mode = 'login') => setAuth({ open: true, mode })
+  const closeAuth = () => setAuth((current) => ({ ...current, open: false }))
+
+  let page
+  if (pathname === '/') page = <Landing onOpenAuth={openAuth} />
+  else if (pathname === '/dashboard') page = <Dashboard />
+  else if (pathname === '/discover') page = <Discover />
+  else if (pathname === '/teachers') page = <Teachers />
+  else if (pathname.startsWith('/teachers/')) {
+    page = <TeacherProfile id={pathname.replace('/teachers/', '')} />
+  } else if (pathname === '/learning') page = <Workspace />
+  else if (pathname === '/assessment') page = <Assessment />
+  else if (pathname === '/progress') page = <Progress />
+  else if (pathname === '/profile') page = <Profile onOpenAuth={openAuth} />
+  else page = <NotFound />
+
+  const appLike = pathname === '/learning'
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <Header key={pathname} onOpenAuth={openAuth} />
+      <main id="main">{page}</main>
+      {appLike ? null : <Footer />}
+      <Tabbar />
+      <Toaster />
+      <AuthModal
+        key={`${auth.open}-${auth.mode}`}
+        open={auth.open}
+        initialMode={auth.mode}
+        onClose={closeAuth}
+      />
     </>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <RouterProvider>
+      <StoreProvider>
+        <Shell />
+      </StoreProvider>
+    </RouterProvider>
+  )
+}
