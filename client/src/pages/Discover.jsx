@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   Clock,
@@ -22,6 +22,7 @@ import {
   teachersById,
   topics,
 } from '../data/content'
+import { getLearningTopics } from '../lib/api'
 import { Avatar, Badge, Bar, EmptyState, ProgressRing, Rating, SubjectIcon, SubjectTile } from '../components/ui'
 
 const CLASS_OPTIONS = ['Class 8', 'Class 9', 'Class 10', 'Class 11']
@@ -59,6 +60,9 @@ export default function Discover() {
   const [sort, setSort] = useState('match')
   const [suggestOpen, setSuggestOpen] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  useEffect(() => {
+  getLearningTopics().catch((err) => console.error(err))
+}, [])
 
   const suggestions = useMemo(() => {
     const needle = query.trim().toLowerCase()
