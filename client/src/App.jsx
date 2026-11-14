@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Compass } from 'lucide-react'
+import { Compass, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { RouterProvider, useRouter } from './lib/router'
-import { StoreProvider } from './lib/store'
-import { AuthModal, Footer, Header, Tabbar, Toaster } from './components/chrome'
+import { StoreProvider, useStore } from './lib/store'
+import { Footer, Header, Tabbar, Toaster } from './components/chrome'
+import AuthModal from './components/AuthModal'
 import { EmptyState } from './components/ui'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
@@ -14,6 +15,14 @@ import Assessment from './pages/Assessment'
 import Progress from './pages/Progress'
 import Profile from './pages/Profile'
 import './styles/pages.css'
+import './styles/auth.css'
+
+const PROTECTED_ROUTES = new Set([
+  '/dashboard',
+  '/learning',
+  '/progress',
+  '/profile',
+])
 
 function NotFound() {
   return (
@@ -33,8 +42,50 @@ function NotFound() {
   )
 }
 
+function AuthWall({ onOpenAuth }) {
+  return (
+    <div className="container">
+      <section className="auth-wall">
+        <div className="card auth-wall__card">
+          <span className="auth-wall__icon">
+            <LockKeyhole size={24} />
+          </span>
+          <span className="eyebrow">Your private learning space</span>
+          <h1>Sign in to continue your journey.</h1>
+          <p>
+            Your dashboard, learning workspace, progress and profile are tied to
+            your account. Log in to pick up where you left off, or create a free
+            account in under a minute.
+          </p>
+          <div className="auth-wall__actions">
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => onOpenAuth('login')}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={() => onOpenAuth('signup')}
+            >
+              Create free account
+            </button>
+          </div>
+          <p className="auth-wall__note">
+            <ShieldCheck size={13} /> Accounts and sessions are stored on this
+            device for the demo.
+          </p>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function Shell() {
   const { pathname } = useRouter()
+  const { signedIn } = useStore()
   const [auth, setAuth] = useState({ open: false, mode: 'login' })
 
   useEffect(() => {
@@ -54,8 +105,12 @@ function Shell() {
   } else if (pathname === '/learning') page = <Workspace />
   else if (pathname === '/assessment') page = <Assessment />
   else if (pathname === '/progress') page = <Progress />
-  else if (pathname === '/profile') page = <Profile onOpenAuth={openAuth} />
+  else if (pathname === '/profile') page = <Profile />
   else page = <NotFound />
+
+  if (!signedIn && PROTECTED_ROUTES.has(pathname)) {
+    page = <AuthWall onOpenAuth={openAuth} />
+  }
 
   const appLike = pathname === '/learning'
 
