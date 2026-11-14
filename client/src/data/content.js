@@ -976,7 +976,7 @@ export const assessmentQuestions = [
     id: 'a3',
     concept: 'Quadratic formula',
     difficulty: 'Intermediate',
-    prompt: 'Solve 2x² − 7x + 3 = 0.',
+    prompt: 'Solve 2x²-7x+3 = 0.',
     options: ['x = 3 or ½', 'x = −3 or −½', 'x = 3 or 2', 'x = 1 or 1.5'],
     answer: 0,
     explanation:
