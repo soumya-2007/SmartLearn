@@ -58,11 +58,25 @@ function isActive(pathname, item) {
    -------------------------------------------------------------------------- */
 
 export function Header({ onOpenAuth }) {
-  const { pathname } = useRouter()
-  const { signedIn, signOut, savedTeachers } = useStore()
+  const { pathname, navigate } = useRouter()
+  const { signedIn, signOut, savedTeachers, user } = useStore()
   const [sheetOpen, setSheetOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const accountRef = useRef(null)
+
+  const displayName = user?.name || 'Aarav Mehta'
+  const displayEmail = user?.email || 'aarav.mehta@example.com'
+  const initials = user?.initials || 'AM'
+  const firstName = displayName.split(' ')[0]
+  const accountSubtitle =
+    user?.role === 'teacher' ? 'Teacher account' : 'Class 10 · Level 7'
+
+  function handleSignOut() {
+    setAccountOpen(false)
+    setSheetOpen(false)
+    signOut()
+    navigate('/')
+  }
 
   useEffect(() => {
     function onPointerDown(event) {
@@ -119,14 +133,14 @@ export function Header({ onOpenAuth }) {
                     aria-haspopup="menu"
                   >
                     <Avatar
-                      name="Aarav Mehta"
-                      initials="AM"
+                      name={displayName}
+                      initials={initials}
                       tint={['#DCEBE4', '#2C7264']}
                       size={30}
                     />
                     <span className="account__meta">
-                      <strong>Aarav</strong>
-                      <span>Class 10 · Level 7</span>
+                      <strong>{firstName}</strong>
+                      <span>{accountSubtitle}</span>
                     </span>
                   </button>
                   {accountOpen ? (
@@ -134,14 +148,14 @@ export function Header({ onOpenAuth }) {
                       <div className="menu__head">
                         <div className="row" style={{ gap: 10 }}>
                           <Avatar
-                            name="Aarav Mehta"
-                            initials="AM"
+                            name={displayName}
+                            initials={initials}
                             tint={['#DCEBE4', '#2C7264']}
                             size={34}
                           />
                           <div className="account__meta">
-                            <strong>Aarav Mehta</strong>
-                            <span>aarav.mehta@example.com</span>
+                            <strong>{displayName}</strong>
+                            <span className="menu__email">{displayEmail}</span>
                           </div>
                         </div>
                       </div>
@@ -161,7 +175,7 @@ export function Header({ onOpenAuth }) {
                       <button
                         type="button"
                         className="menu__item"
-                        onClick={signOut}
+                        onClick={handleSignOut}
                         role="menuitem"
                       >
                         <LogOut /> Sign out
@@ -250,8 +264,8 @@ export function Header({ onOpenAuth }) {
           ) : (
             <div className="mobile-sheet__cta">
               <Link to="/profile" className="btn btn--secondary" onClick={() => setSheetOpen(false)}>
-                <Avatar name="Aarav Mehta" initials="AM" size={22} />
-                Aarav · {savedTeachers.length} saved
+                <Avatar name={displayName} initials={initials} size={22} />
+                {firstName} · {savedTeachers.length} saved
               </Link>
             </div>
           )}
@@ -440,187 +454,3 @@ export function Toaster() {
   )
 }
 
-/* --------------------------------------------------------------------------
-   Auth modal
-   -------------------------------------------------------------------------- */
-
-export function AuthModal({ open, initialMode = 'login', onClose }) {
-  const { signIn, notify } = useStore()
-  const [mode, setMode] = useState(initialMode)
-  const [role, setRole] = useState('student')
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
-
-  useEffect(() => {
-    if (!open) return undefined
-    const onKey = (event) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = previous
-    }
-  }, [open, onClose])
-
-  if (!open) return null
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    if (!form.email.trim() || form.password.length < 4) {
-      notify('Enter an email and a password of at least 4 characters.')
-      return
-    }
-    signIn(mode === 'signup' ? form.name || 'Aarav' : 'Aarav')
-    onClose()
-  }
-
-  return (
-    <div
-      className="overlay"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
-      }}
-    >
-      <div className="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-        <button type="button" className="modal__close" onClick={onClose} aria-label="Close">
-          <X size={18} />
-        </button>
-        <Logo />
-        <h2 id="auth-title">
-          {mode === 'login' ? 'Welcome back' : 'Start learning smarter'}
-        </h2>
-        <p className="modal__lead">
-          {mode === 'login'
-            ? 'Pick up your learning path exactly where you left it.'
-            : 'Create a free account and get a personalised study plan in minutes.'}
-        </p>
-
-        <div className="auth-tabs" role="tablist" aria-label="Authentication">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === 'login'}
-            className={mode === 'login' ? 'is-active' : ''}
-            onClick={() => setMode('login')}
-          >
-            Log in
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === 'signup'}
-            className={mode === 'signup' ? 'is-active' : ''}
-            onClick={() => setMode('signup')}
-          >
-            Sign up
-          </button>
-        </div>
-
-        <div className="auth-roles" role="group" aria-label="I am a">
-          <button
-            type="button"
-            className={role === 'student' ? 'is-active' : ''}
-            onClick={() => setRole('student')}
-          >
-            <GraduationCap size={15} /> Student
-          </button>
-          <button
-            type="button"
-            className={role === 'teacher' ? 'is-active' : ''}
-            onClick={() => setRole('teacher')}
-          >
-            <Users size={15} /> Teacher
-          </button>
-        </div>
-
-        <form className="stack" style={{ gap: 12 }} onSubmit={handleSubmit}>
-          {mode === 'signup' ? (
-            <label className="field">
-              <span className="field-label">Full name</span>
-              <input
-                className="input"
-                placeholder="Aarav Mehta"
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-                autoComplete="name"
-              />
-            </label>
-          ) : null}
-          <label className="field">
-            <span className="field-label">Email address</span>
-            <input
-              className="input"
-              type="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={(event) => setForm({ ...form, email: event.target.value })}
-              autoComplete="email"
-              autoFocus
-            />
-          </label>
-          <label className="field">
-            <span className="field-label">Password</span>
-            <input
-              className="input"
-              type="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={(event) => setForm({ ...form, password: event.target.value })}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            />
-          </label>
-          <button type="submit" className="btn btn--primary btn--block btn--lg" style={{ marginTop: 4 }}>
-            {mode === 'login' ? 'Log in to SmartLearn' : 'Create my free account'}
-            <ArrowRight size={17} />
-          </button>
-        </form>
-
-        <div className="auth-sep">or continue with</div>
-        <button
-          type="button"
-          className="btn btn--secondary btn--block"
-          onClick={() => {
-            signIn('Aarav')
-            onClose()
-          }}
-        >
-          <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              fill="#4285F4"
-              d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.4a5.5 5.5 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.6-5.2 3.6-8.8Z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.7l4-3Z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A11.6 11.6 0 0 0 12 0 12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"
-            />
-          </svg>
-          Continue with Google
-        </button>
-
-        <p className="auth-foot">
-          {mode === 'login' ? 'New to SmartLearn? ' : 'Already learning with us? '}
-          <button
-            type="button"
-            className="link-button"
-            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-          >
-            {mode === 'login' ? 'Create an account' : 'Log in instead'}
-          </button>
-          <br />
-          By continuing you agree to our friendly demo terms. No card required.
-        </p>
-      </div>
-    </div>
-  )
-}

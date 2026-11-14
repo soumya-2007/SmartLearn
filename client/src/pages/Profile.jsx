@@ -29,9 +29,9 @@ const LEARNING_STYLES = [
 const DAILY_GOALS = [30, 45, 60, 90]
 const BOARDS = ['CBSE', 'ICSE', 'State board', 'IB']
 
-export default function Profile({ onOpenAuth }) {
+export default function Profile() {
   const {
-    signedIn,
+    user,
     prefs,
     updatePrefs,
     savedTeachers,
@@ -41,6 +41,15 @@ export default function Profile({ onOpenAuth }) {
   const [draft, setDraft] = useState(prefs)
 
   const saved = savedTeachers.map((id) => teachersById[id]).filter(Boolean)
+  const displayName = user?.name || student.name
+  const displayInitials = user?.initials || student.initials
+  const displayEmail = user?.email || student.email
+  const joined = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('en-IN', {
+        month: 'long',
+        year: 'numeric',
+      })
+    : student.joined
 
   function save(event) {
     event.preventDefault()
@@ -63,63 +72,37 @@ export default function Profile({ onOpenAuth }) {
           <Link to="/progress" className="btn btn--secondary btn--sm">
             View analytics <ArrowRight size={14} />
           </Link>
-          {signedIn ? (
-            <button type="button" className="btn btn--ghost btn--sm" onClick={signOut}>
-              <LogOut size={14} /> Sign out
-            </button>
-          ) : null}
+          <button type="button" className="btn btn--ghost btn--sm" onClick={signOut}>
+            <LogOut size={14} /> Sign out
+          </button>
         </div>
       </header>
-
-      {!signedIn ? (
-        <section className="prof-guest card">
-          <div className="row" style={{ gap: 14 }}>
-            <span className="tile-icon tile-icon--gold">
-              <Sparkles size={18} />
-            </span>
-            <div className="grow">
-              <strong>You’re browsing as a guest</strong>
-              <p className="small muted">
-                Sign in to save preferences, shortlist teachers and keep your streak
-                across devices.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="btn btn--primary btn--sm"
-              onClick={() => onOpenAuth('signup')}
-            >
-              Create free account
-            </button>
-          </div>
-        </section>
-      ) : null}
 
       <div className="split">
         <div className="stack" style={{ gap: 22 }}>
           <section className="card prof-identity">
             <div className="prof-identity__main">
               <Avatar
-                name={student.name}
-                initials={student.initials}
+                name={displayName}
+                initials={displayInitials}
                 tint={['#DCEBE4', '#2C7264']}
                 size={78}
                 online
               />
               <div className="grow">
                 <div className="row wrap" style={{ gap: 8 }}>
-                  <h2>{student.name}</h2>
+                  <h2>{displayName}</h2>
                   <Badge variant="teal" icon={GraduationCap}>
                     {student.grade}
                   </Badge>
                   <Badge variant="gold">Level {student.level}</Badge>
                 </div>
                 <p className="small muted">
-                  {student.levelName} · {student.board} · Joined {student.joined}
+                  {student.levelName} · {student.board} · Joined {joined}
                 </p>
                 <div className="row wrap" style={{ gap: 16, marginTop: 10 }}>
                   <span className="tiny muted row" style={{ gap: 6 }}>
-                    <Mail size={13} /> {student.email}
+                    <Mail size={13} /> {displayEmail}
                   </span>
                   <span className="tiny muted row" style={{ gap: 6 }}>
                     <MapPin size={13} /> {student.city}
@@ -416,7 +399,11 @@ export default function Profile({ onOpenAuth }) {
             </h2>
             <div className="kv">
               <span>Email</span>
-              <strong className="small">{student.email}</strong>
+              <strong className="small">{displayEmail}</strong>
+            </div>
+            <div className="kv">
+              <span>Account type</span>
+              <strong>{user?.role === 'teacher' ? 'Teacher' : 'Student'}</strong>
             </div>
             <div className="kv">
               <span>Plan</span>
@@ -424,7 +411,7 @@ export default function Profile({ onOpenAuth }) {
             </div>
             <div className="kv">
               <span>Member since</span>
-              <strong>{student.joined}</strong>
+              <strong>{joined}</strong>
             </div>
             <Link to="/assessment" className="btn btn--secondary btn--sm btn--block" style={{ marginTop: 14 }}>
               Retake diagnostic <ArrowRight size={14} />

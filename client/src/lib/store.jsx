@@ -2,9 +2,18 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
+import {
+  DEMO_ACCOUNT,
+  ensureDemoAccount,
+  restoreSession,
+  signIn as authenticate,
+  signOut as clearAuthSession,
+  signUp as registerAccount,
+} from './auth'
 
 const StoreContext = createContext(null)
 
@@ -16,7 +25,8 @@ export const DEFAULT_GOALS = [
 ]
 
 export function StoreProvider({ children }) {
-  const [signedIn, setSignedIn] = useState(false)
+  const [user, setUser] = useState(() => restoreSession())
+  const signedIn = Boolean(user)
   const [savedTeachers, setSavedTeachers] = useState(['meera-nair'])
   const [completedModules, setCompletedModules] = useState(['m1', 'm2'])
   const [assessment, setAssessment] = useState(null)
@@ -32,6 +42,10 @@ export function StoreProvider({ children }) {
     weeklyDigest: true,
   })
 
+  useEffect(() => {
+    ensureDemoAccount()
+  }, [])
+
   const notify = useCallback((message, tone = 'default') => {
     const id = Math.random().toString(36).slice(2, 9)
     setToasts((current) => [...current, { id, message, tone }])
@@ -45,16 +59,53 @@ export function StoreProvider({ children }) {
   }, [])
 
   const signIn = useCallback(
-    (name) => {
-      setSignedIn(true)
-      notify(`Welcome${name ? `, ${name.split(' ')[0]}` : ' back'} — your plan is ready.`, 'success')
+    async ({ email, password, remember = true }) => {
+      const result = await authenticate({ email, password, remember })
+      if (!result.ok) return result
+      setUser(result.user)
+      notify(
+        `Welcome back, ${result.user.name.split(' ')[0]} — your plan is ready.`,
+        'success',
+      )
+      return result
     },
     [notify],
   )
 
+  const signUp = useCallback(
+    async ({ name, email, password, role = 'student', remember = true }) => {
+      const result = await registerAccount({
+        name,
+        email,
+        password,
+        role,
+        remember,
+      })
+      if (!result.ok) return result
+      setUser(result.user)
+      notify(
+        `Welcome, ${result.user.name.split(' ')[0]} — your learning space is ready.`,
+        'success',
+      )
+      return result
+    },
+    [notify],
+  )
+
+  const signInDemo = useCallback(async () => {
+    const seeded = await ensureDemoAccount()
+    if (!seeded.ok) return seeded
+    return signIn({
+      email: DEMO_ACCOUNT.email,
+      password: DEMO_ACCOUNT.password,
+      remember: true,
+    })
+  }, [signIn])
+
   const signOut = useCallback(() => {
-    setSignedIn(false)
-    notify('You have been signed out of this demo.')
+    clearAuthSession()
+    setUser(null)
+    notify('You have been signed out.')
   }, [notify])
 
   const toggleSavedTeacher = useCallback(
@@ -119,8 +170,11 @@ export function StoreProvider({ children }) {
 
   const value = useMemo(
     () => ({
+      user,
       signedIn,
       signIn,
+      signUp,
+      signInDemo,
       signOut,
       savedTeachers,
       toggleSavedTeacher,
@@ -138,8 +192,11 @@ export function StoreProvider({ children }) {
       dismissToast,
     }),
     [
+      user,
       signedIn,
       signIn,
+      signUp,
+      signInDemo,
       signOut,
       savedTeachers,
       toggleSavedTeacher,

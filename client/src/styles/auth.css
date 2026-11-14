@@ -1,0 +1,233 @@
+/* --------------------------------------------------------------------------
+   Authentication — form internals
+   -------------------------------------------------------------------------- */
+
+.input-affix {
+  position: relative;
+  display: block;
+}
+
+.input-affix .input {
+  padding-right: 46px;
+}
+
+.input-affix__btn {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  border-radius: 8px;
+  color: var(--ink-3);
+}
+
+.input-affix__btn:hover {
+  background: var(--teal-050);
+  color: var(--navy);
+}
+
+.field-hint {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.auth-strength {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.auth-strength span {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--line);
+  transition: background-color 0.2s var(--ease);
+}
+
+.auth-strength span.is-on.strength-1 {
+  background: var(--danger);
+}
+
+.auth-strength span.is-on.strength-2 {
+  background: var(--gold);
+}
+
+.auth-strength span.is-on.strength-3 {
+  background: var(--teal);
+}
+
+.menu__email {
+  max-width: 158px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid #f3d8cd;
+  border-radius: 10px;
+  background: var(--danger-050);
+  color: #9b4c36;
+  font-size: 12.5px;
+  line-height: 1.45;
+  animation: fade 0.18s var(--ease) both;
+}
+
+.auth-alert svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--teal-600);
+  cursor: pointer;
+}
+
+.auth-form .btn[disabled] {
+  opacity: 0.72;
+  cursor: progress;
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.auth-demo {
+  padding: 11px 13px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 11px;
+  background: #fbfdfb;
+}
+
+.auth-demo p {
+  margin-bottom: 10px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.auth-demo strong {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.auth-demo code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--teal-050);
+  color: #2f7567;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Protected routes
+   -------------------------------------------------------------------------- */
+
+.auth-wall {
+  display: grid;
+  place-items: center;
+  min-height: 62vh;
+  padding-block: 48px;
+}
+
+.auth-wall__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(540px, 100%);
+  padding: 38px 32px;
+  text-align: center;
+}
+
+.auth-wall__icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 2px;
+  border-radius: 17px;
+  background: var(--teal-050);
+  color: var(--teal-600);
+  border: 1px solid #d5e8e1;
+}
+
+.auth-wall__card h1 {
+  font-size: clamp(23px, 4vw, 28px);
+  line-height: 1.22;
+}
+
+.auth-wall__card p {
+  max-width: 42ch;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.auth-wall__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.auth-wall__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+@media (max-width: 520px) {
+  .auth-wall__card {
+    padding: 30px 22px;
+  }
+
+  .auth-wall__actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .auth-wall__actions .btn {
+    width: 100%;
+  }
+
+  .modal {
+    padding: 26px 22px;
+  }
+}

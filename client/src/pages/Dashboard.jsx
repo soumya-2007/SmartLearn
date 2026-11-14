@@ -37,8 +37,11 @@ const materialIcons = {
 }
 
 export default function Dashboard() {
-  const { goals, toggleGoal, prefs, notify } = useStore()
+  const { goals, toggleGoal, prefs, notify, user } = useStore()
   const [week, setWeek] = useState('this')
+  const displayName = user?.name || 'Aarav Mehta'
+  const displayInitials = user?.initials || 'AM'
+  const firstName = displayName.split(' ')[0]
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
@@ -64,15 +67,15 @@ export default function Dashboard() {
       <header className="dash-head">
         <div className="row" style={{ gap: 16 }}>
           <Avatar
-            name="Aarav Mehta"
-            initials="AM"
+            name={displayName}
+            initials={displayInitials}
             tint={['#DCEBE4', '#2C7264']}
             size={56}
             online
           />
           <div>
             <span className="eyebrow">Class 10 · CBSE · Level 7</span>
-            <h1 className="page-title">{greeting}, Aarav.</h1>
+            <h1 className="page-title">{greeting}, {firstName}.</h1>
             <p className="muted small">
               {remainingGoals
                 ? `${remainingGoals} small step${remainingGoals > 1 ? 's' : ''} left in today’s plan — ${

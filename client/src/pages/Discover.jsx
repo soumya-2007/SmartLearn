@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { Link } from '../lib/router'
+import { useStore } from '../lib/store'
 import {
   difficultyOptions,
   goalOptions,
@@ -49,6 +50,9 @@ function scoreTopic(topic, filters) {
 }
 
 export default function Discover() {
+  const { user } = useStore()
+  const displayName = user?.name || 'Aarav Mehta'
+  const displayInitials = user?.initials || 'AM'
   const params = new URLSearchParams(window.location.search)
   const [query, setQuery] = useState(params.get('q') || '')
   const [subject, setSubject] = useState(params.get('subject') || 'all')
@@ -399,9 +403,9 @@ export default function Discover() {
           <div className="filter-profile">
             <span className="filter-profile__label">Matching against</span>
             <div className="row" style={{ gap: 8 }}>
-              <Avatar name="Aarav Mehta" initials="AM" size={30} />
+              <Avatar name={displayName} initials={displayInitials} size={30} />
               <div>
-                <strong className="small">Aarav · Class 10</strong>
+                <strong className="small">{displayName.split(' ')[0]} · Class 10</strong>
                 <p className="tiny muted">English · Intermediate</p>
               </div>
             </div>
