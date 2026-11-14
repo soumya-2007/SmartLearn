@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import teacherRoutes from "./routes/teacherRoutes.js";
+import resourceRoutes from "./routes/resourceRoutes.js";
+import learningRoutes from "./routes/learningRoutes.js";
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/teachers", teacherRoutes);
+app.use("/api/resources", resourceRoutes);
+app.use("/api/learning", learningRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
