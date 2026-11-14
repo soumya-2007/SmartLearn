@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   GraduationCap,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useRouter } from '../lib/router'
 import { languageOptions, subjects, teachers } from '../data/content'
+import { getTeachers } from '../lib/api'
 import { TeacherCard } from '../components/TeacherCard'
 import { EmptyState } from '../components/ui'
 
@@ -48,6 +49,9 @@ export default function Teachers() {
   const [language, setLanguage] = useState('all')
   const [style, setStyle] = useState('all')
   const [sort, setSort] = useState('compatibility')
+  useEffect(() => {
+    getTeachers().catch((err) => console.error(err))
+  }, [])
 
   const activeCount = [
     subject !== 'all',
