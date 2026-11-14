@@ -20,7 +20,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Welcome to SmartLearn Backend API",
+    message: "Welcome to SmartLearn  Backend API",
   });
 });
 
